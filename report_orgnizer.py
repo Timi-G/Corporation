@@ -7,6 +7,11 @@ from datetime import time as tm
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype
 
+# create custom excel sheet
+def excel_custom(dataframe,workb_n_sheet):
+    df2excel=workb_n_sheet[0]
+    dataframe.to_excel(df2excel,workb_n_sheet[1],index=False)
+
 # returns extracted data as pandas in a list
 def extract_excel(docs):
     st = time.process_time()
@@ -280,7 +285,7 @@ class FarmReport(Report):
 # Sample Run
 if __name__ == '__main__':
     farm_report= FarmReport()
-    report_df=farm_report.gen_activities_report({'Daily_Report':["MEG_Farmers_Daily_Report.xlsx", "MEG Farmers Daily Report"]},
+    report_df=farm_report.gen_activities_report({'Daily_Report':["MEG Farmers Daily Report.xlsx", "MEG Farmers Daily Report"]},
                               [[2023,6,1],[2023,7,31]],'MEG')
 
     excel_custom(report_df,['MEG 2023 Farm Report.xlsx','MEG Farm Report'])
