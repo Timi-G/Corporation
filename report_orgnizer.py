@@ -280,7 +280,7 @@ class FarmReport(Report):
 # Sample Run
 if __name__ == '__main__':
     farm_report= FarmReport()
-    report_df=farm_report.gen_activities_report({'Daily_Report':["MGL_Farmers_Daily_Report_June.xlsx", "MGL Farmers Daily Report"]},
-                              [[2023,7,1],[2023,7,31]],'MGL')
+    report_df=farm_report.gen_activities_report({'Daily_Report':["MEG_Farmers_Daily_Report.xlsx", "MEG Farmers Daily Report"]},
+                              [[2023,6,1],[2023,7,31]],'MEG')
 
-    excel_custom(report_df,['MGL 2023 Report.xlsx','MGL June Report'])
+    excel_custom(report_df,['MEG 2023 Farm Report.xlsx','MEG Farm Report'])
