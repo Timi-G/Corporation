@@ -282,6 +282,70 @@ class FarmReport(Report):
         editors = {ent[0]: f'{ent[1]} {ent[2]}' for ent in editor_raw}
         return editors
 
+
+class FinanceReport():
+    def __init__(self, dataset, col_to_float):
+        self.dataset = self.convert_col_to_float(dataset,col_to_float)
+
+    def convert_col_to_float(self, dataset, col):
+        if col in dataset:
+            dataset[col] = dataset[col].astype(float)
+            return dataset
+        else:
+            return dataset
+
+    def col_metrics_data(self, col_name, group, sort_by, dataset):
+        datagroup = dataset[dataset[col_name] == group].copy()
+        datagroup.sort_values(by=sort_by, inplace=True)
+        return datagroup
+
+    # can be used to get basic income, sales, expenses metrics
+    def basic_metrics(self, dataset):
+        biggest = dataset.head()
+        smallest = dataset.tail()
+        dataset['cumsum'] = dataset[['amount']].cumsum()
+        return [biggest, smallest, dataset]
+
+    # e.g. entry_types = ['income', 'sales', 'expenses']
+    # metric_category can be personal or business
+    def get_basic_metrics(self, entry_types, metric_category):
+        data_groups={ent_type: self.col_metrics_data('entry_type',ent_type,'amount',self.dataset)
+                    for ent_type in entry_types
+                     }
+
+        # receivables & payables
+        # income_dt: get income data as pandas, receivable_dt: filter the receivables,
+        # data_groups: include in data_groups dictionary
+        if metric_category == 'personal':
+            income_dt = self.dataset[self.dataset['entry_type'] == 'income']
+            receivable_dt = self.col_metrics_data('payment_status', 'yes', 'amount_owed', income_dt)
+            data_groups['receivable'] = receivable_dt
+
+            expenses_dt = self.dataset[self.dataset['entry_type'] == 'expense']
+            payable_dt = self.col_metrics_data('payment_status', 'yes', 'amount_owed', expenses_dt)
+            data_groups['payable'] = payable_dt
+
+        elif metric_category == 'business':
+            sales_dt = self.dataset[self.dataset['entry_type'] == 'sales']
+            receivable_dt = self.col_metrics_data('payment_status', 'no', 'amount_owed', sales_dt)
+            data_groups['receivable'] = receivable_dt
+
+            expenses_dt = self.dataset[self.dataset['entry_type'] == 'expense']
+            payable_dt = self.col_metrics_data('payment_status', 'no', 'amount_owed', expenses_dt)
+            data_groups['payable'] = payable_dt
+
+        # basic metrics
+        basic_metrics = {}
+        for ent_type in entry_types:
+            type_basic_metrics = self.basic_metrics(data_groups[ent_type])
+            basic_metrics[ent_type] = {'biggest': type_basic_metrics[0], 'smallest': type_basic_metrics[1],
+             'cumsum': type_basic_metrics[2]}
+        self.basic_metrics_dataset = basic_metrics
+        return basic_metrics
+
+    def basic_metrics_json(self):
+        pass
+
 # Sample Run
 if __name__ == '__main__':
     farm_report= FarmReport()
